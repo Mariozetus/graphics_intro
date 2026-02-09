@@ -1,0 +1,30 @@
+# Directorios de compilación y binarios
+bin/
+build/
+dist/
+
+# Archivos objeto
+*.o
+*.obj
+
+# Archivos de debug
+*.dSYM/
+*.su
+*.gch
+*.pch
+
+# Archivos temporales del editor
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+*.log
