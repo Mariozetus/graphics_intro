@@ -67,7 +67,7 @@ namespace mathLib{
         return m;
     }
     
-    matrix4x4f makeTranslate(float x, float y, float z){
+    matrix4x4f makeTraslate(float x, float y, float z){
         matrix4x4f m = makeIdentityf();
         m.matrixVec[0].w = x;
         m.matrixVec[1].w = y;

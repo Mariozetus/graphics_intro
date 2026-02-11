@@ -33,7 +33,7 @@ namespace mathLib{
 
     
     matrix4x4f makeIdentityf();
-    matrix4x4f makeTranslate(float x, float y, float z);
+    matrix4x4f makeTraslate(float x, float y, float z);
     matrix4x4f makeRotate(float roll, float pitch, float yaw);
     matrix4x4f makeScale(float x, float y, float z);
     matrix4x4f operator+(matrix4x4f m1, matrix4x4f m2);

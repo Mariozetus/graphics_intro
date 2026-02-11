@@ -1,58 +1,136 @@
 #include "Render.h"
-#include <iostream>
+#include "eventManager.h"
+#include "mathLib.h"
 
-Render::Render(int ancho, int alto) : width(ancho), height(alto) {
-    buffer = new char*[height];
-    for (int i = 0; i < height; i++) {
-        buffer[i] = new char[width];
-    }
-    
-    resetBuffer();
+Render::Render()
+{
+    // inicializamos glfw0
+	if(glfwInit() != GLFW_TRUE){ // si no es true, es que hay errores
+		cout << "ERROR Starting GLFW" << endl;
+		return;
+	} 
+
+#ifdef __APPLE__
+	glfwWindowHint (GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint (GLFW_CONTEXT_VERSION_MINOR, 1);
+	glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+	glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
+
+	int width = 640;
+	int height = 480;
+
+	this->window = glfwCreateWindow(width, height, "Intro PRGR", nullptr, nullptr);
+
+	glfwMakeContextCurrent(window); // Creamos el contexto (contenedor) en base a nuestra ventana
+
+	gladLoadGL(glfwGetProcAddress); // Usarla despues de iniciar GLFW
+
+	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // Añadimos la propriedad de que no se pueda reescalar la ventana
+
+	EventManager::initEventManager(window);
+
+    this->exit = false;
 }
 
-Render::~Render() {
-    for (int i = 0; i < height; i++) {
-        delete[] buffer[i];
-    }
-    delete[] buffer;
+void Render::setupObject(Object3D *obj)
+{
+    // Generar buffers
+    bufferObject_t bufferObject  = { 0xFFFFFFFF, 0xFFFFFFFF, -0xFFFFFFFF };  // -1 en unsigned (se expresa asi) es infinito
+    glGenVertexArrays(1, &bufferObject.bufferId); // Generar lista de buffers
+    glGenBuffers(1, &bufferObject.vertexBufferId); // Genera un buffer de vertices
+    glGenBuffers(1, &bufferObject.indexBufferId); // Genera un buffer de ids de vertices
+
+
+    // Copiar datos
+    glBindVertexArray(bufferObject.bufferId); // Activar lista de buffers
+    glBindBuffer(GL_ARRAY_BUFFER, bufferObject.vertexBufferId); // Activar buffer de vertices
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertex_t) * obj->vertexList.size(), obj->vertexList.data(), GL_STATIC_DRAW); // Copias los datos al buffer activo
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.indexBufferId); // Activar buffer de indices de vertices
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * obj->indexList.size(), obj->indexList.data(), GL_STATIC_DRAW);
+
+
+    // Guardar identificadores
+    bufferObjectList[obj->objectId] = bufferObject;
+
 }
 
-void Render::PutPixel(int x, int y) {
-    
-    int col = x + (width / 2);
-    int row = y + (height / 2);
-    
-    int maxCoord = width / 2;
-    int minCoord = -(width / 2);
-    
-    // Si es invalida la ignoramos
-    if (x > maxCoord || x < minCoord || y > maxCoord || y < minCoord) {
-        return;
-    }
-    
-    // Verificar límites del array
-    if (row >= 0 && row < height && col >= 0 && col < width) {
-        buffer[row][col] = 1;
-    }
-}
-
-void Render::resetBuffer() {
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            buffer[i][j] = 0;
-        }
+void Render::updateObjects(double timeStep)
+{
+    for(auto& obj: objectList){
+        obj->moveObject(timeStep);
     }
 }
 
-void Render::Draw() {
-    for (int i = height - 1; i >= 0; i--) {
-        for (int j = 0; j < width; j++) {
-            if (buffer[i][j] == 0) {
-                std::cout << " ";
-            } else {
-                std::cout << "·";
-            }
-        }
-        std::cout << std::endl;
+void Render::drawObjects()
+{
+    for(auto& obj : objectList){
+        
+        // Settear buffers
+        auto bufferObject = bufferObjectList[obj->objectId]; // Recuperar lista buffers
+
+        glBindVertexArray(bufferObject.bufferId); // Activar lista de buffers
+        glBindBuffer(GL_ARRAY_BUFFER, bufferObject.vertexBufferId); // Activar buffer de vertices
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.indexBufferId); // Activar buffer de indices de vertices
+        
+        // Settear matriz modelo
+        matrix4x4f model = obj->computeModelMatrix();
+        glPushMatrix(); // Crear una matriz en GPU
+        glLoadIdentity(); // Cargar matriz identidad
+        
+        auto m = mathLib::transpose(model); // La multiplicamos por la traspuesta pq es la manera mas rapida de subir nuestra matriz de movimiento
+        glMultMatrixf(&m.matrix[0]);
+
+        // Describir datos
+        glEnableClientState(GL_VERTEX_ARRAY); // Vamos a uar array de posiciones
+        // Describimos array de posiciones
+        glVertexPointer(4, GL_FLOAT, sizeof(vertex_t), (void*)offsetof(vertex_t, position));
+
+        // Dibujar
+        glDrawElements(GL_TRIANGLES, obj->indexList.size(), GL_UNSIGNED_INT, nullptr);
+
+
+        glPopMatrix(); // Saca la matriz
+        glDisableClientState(GL_VERTEX_ARRAY);
     }
+}
+
+void Render::mainLoop()
+{
+	double lastTime = 0;
+	double newTime = glfwGetTime();
+	double deltaTime = newTime - lastTime;
+
+	Object3D triangle;
+	
+	// Rendering loop
+	while(!exit){
+		
+		// Calcular tiempo de render
+		newTime = glfwGetTime();
+		deltaTime = newTime - lastTime;
+		lastTime = newTime;
+
+		// Si pulsa ESC o pulsa el boton de cerrar (evento)
+		if(EventManager::keymap[GLFW_KEY_ESCAPE] || glfwWindowShouldClose(window))
+			exit = true;
+		
+
+		updateObjects(deltaTime);
+
+		// Limpiar
+		glClear(GL_COLOR_BUFFER_BIT); // Limpia el buffer
+		
+		// Dibujar
+		drawObjects();
+
+		// Intercambiar buffers
+		glfwSwapBuffers(window); // (presenta lo dibujado)
+
+		// Poll de eventos
+		EventManager::updateEvents(); 
+	}	
+	glfwTerminate(); // Ultima linea de OpenGL
+	
 }

@@ -1,6 +1,5 @@
 #pragma once
 #include "mathLib.h"
-#include "eventManager.h"
 using namespace mathLib;
 
 typedef struct{
@@ -12,7 +11,12 @@ typedef struct{
 class Object3D {  
 
 public:
+    static inline unsigned int idCounter;
+
+    unsigned int objectId;
+
     vector<vertex_t> vertexList;
+    vector<unsigned int> indexList;
 
     vec4float position = { 0, 0, 0, 1};
 

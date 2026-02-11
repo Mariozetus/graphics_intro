@@ -5,32 +5,35 @@ INCLUDES = -Iinclude -Iexternal/glad/inc -Iexternal # Includes del proyecto
 LIBS = -lglfw -lX11 -lpthread -ldl # Librerias del sistema
 
 # Directorios
-SRCDIR = src
-OBJDIR = build
-BINDIR = bin
+SRC_DIR = src
+BUILD_DIR = build
+BIN_DIR = bin
 
 # Nombre ejecutable
-TARGET = $(BINDIR)/graphics_intro
+TARGET = $(BIN_DIR)/graphics_intro
 
-# Archivos fuente y objeto
-SOURCES = $(SRCDIR)/main.cpp $(SRCDIR)/mathLib.cpp $(SRCDIR)/Object3D.cpp $(SRCDIR)/eventManager.cpp $(SRCDIR)/Render.cpp
-OBJECTS = $(patsubst $(SRCDIR)/%.cpp,$(OBJDIR)/%.o,$(SOURCES))
+# Archivos fuente y objetos
+SOURCES = $(wildcard $(SRC_DIR)/*.cpp)
+OBJECTS = $(patsubst $(SRC_DIR)/%.cpp,$(BUILD_DIR)/%.o,$(SOURCES))
 
 # Regla principal
-all: $(OBJDIR) $(BINDIR) $(TARGET)
+all: $(TARGET)
 
-$(OBJDIR):
-	mkdir -p $(OBJDIR)
+# Crear ejecutable
+$(TARGET): $(OBJECTS) | $(BIN_DIR)
+	$(CC) $(OBJECTS) -o $@ $(LIBS)
 
-$(BINDIR):
-	mkdir -p $(BINDIR)
+# Compilar archivos objeto
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
-$(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) $(OBJECTS) -o $@ ${INCLUDES} ${LIBS}
+# Crear directorios si no existen
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
 
-$(OBJDIR)/%.o: $(SRCDIR)/%.cpp
-	$(CC) $(CFLAGS) -c $< -o $@ ${INCLUDES}
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
 
 # Regla de limpieza
 clean:
-	rm -rf $(OBJDIR) $(BINDIR)
+	rm -rf $(BUILD_DIR) $(BIN_DIR)
