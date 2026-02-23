@@ -1,10 +1,10 @@
 #pragma once
-#include "mathLib.h"
+#include "math_lib.h"
 using namespace mathLib;
 
 typedef struct{
-    vec4float position;
-    vec4float color;
+    Vector4f position;
+    Vector4f color;
 } vertex_t;
 
 
@@ -18,10 +18,10 @@ public:
     vector<vertex_t> vertexList;
     vector<unsigned int> indexList;
 
-    vec4float position = { 0, 0, 0, 1};
+    Vector4f position = { 0, 0, 0, 1};
 
     Object3D();
 
-    matrix4x4f computeModelMatrix();
+    Matrix4x4f computeModelMatrix();
     void moveObject(double timeStep);
 };

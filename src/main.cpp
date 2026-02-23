@@ -1,10 +1,10 @@
 
 #define GLAD_BIN // Compila con glad (activador OpenGL), poner unicamente en el main
 
-#include "mathLib.h"
-#include "eventManager.h"
-#include "Object3D.h"
-#include "Render.h"
+#include "math_lib.h"
+#include "event_manager.h"
+#include "object_3d.h"
+#include "render.h"
 
 using namespace std;
 using namespace mathLib;

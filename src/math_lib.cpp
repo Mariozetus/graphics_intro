@@ -1,12 +1,12 @@
-#include "mathLib.h"
+#include "math_lib.h"
 
 namespace mathLib{
-    vec4float makeVector4(float x, float y, float z, float w){
-        vec4float v = { x, y, z, w};
+    Vector4f makeVector4(float x, float y, float z, float w){
+        Vector4f v = { x, y, z, w};
         return v;
     }
 
-    vec4float normalize(vec4float v){
+    Vector4f normalize(Vector4f v){
         float x2 = pow(v.x, 2);
         float y2 = pow(v.y, 2);
         float z2 = pow(v.z, 2);
@@ -18,12 +18,12 @@ namespace mathLib{
         return makeVector4(v.x / modulus, v.y / modulus, v.z / modulus, v.w);
     }
 
-    float dotProduct(vec4float v1, vec4float v2){
+    float dotProduct(Vector4f v1, Vector4f v2){
         return v1.x * v2.x + v1.y * v2.y + v1.z * v2.z + v1.w * v2.w;
     }
 
-    vec4float operator +(vec4float v1, vec4float v2){
-        vec4float vres = { 
+    Vector4f operator +(Vector4f v1, Vector4f v2){
+        Vector4f vres = { 
             v1.x + v2.x,
             v1.y + v2.y,
             v1.z + v2.z,
@@ -33,8 +33,8 @@ namespace mathLib{
 
     }
 
-    vec4float operator -(vec4float v1, vec4float v2){
-        vec4float vres = { 
+    Vector4f operator -(Vector4f v1, Vector4f v2){
+        Vector4f vres = { 
             v1.x - v2.x,
             v1.y - v2.y,
             v1.z - v2.z,
@@ -43,8 +43,8 @@ namespace mathLib{
         return vres;
     }
 
-    vec4float operator *(vec4float v1, vec4float v2){
-        vec4float vres = { 
+    Vector4f operator *(Vector4f v1, Vector4f v2){
+        Vector4f vres = { 
             v1.y * v2.z - v1.z * v2.y,
             v1.z * v2.x - v1.x * v2.z,
             v1.x * v2.y - v1.y * v2.x,
@@ -53,8 +53,16 @@ namespace mathLib{
         return vres;
     }
 
-    matrix4x4f makeIdentityf(){
-        matrix4x4f m;
+    Vector4f operator*(Vector4f v1, float v2){
+        return makeVector4(v1.v[0] * v2, v1.v[1] * v2, v1.v[2] * v2, v1.v[3] * v2);
+    }
+    
+    Vector4f operator*(float v2, Vector4f v1){
+        return v1 * v2;
+    }
+
+    Matrix4x4f makeIdentityf(){
+        Matrix4x4f m;
 
         for(int i = 0; i < 4; i++){
             for(int j = 0; j < 4; j++){
@@ -67,8 +75,8 @@ namespace mathLib{
         return m;
     }
     
-    matrix4x4f makeTraslate(float x, float y, float z){
-        matrix4x4f m = makeIdentityf();
+    Matrix4x4f makeTraslate(float x, float y, float z){
+        Matrix4x4f m = makeIdentityf();
         m.matrixVec[0].w = x;
         m.matrixVec[1].w = y;
         m.matrixVec[2].w = z;
@@ -79,8 +87,8 @@ namespace mathLib{
     /// @param roll rotacion en x 
     /// @param pitch rotacion en y
     /// @param yaw rotacion en z
-    matrix4x4f makeRotate(float roll, float pitch, float yaw){
-        matrix4x4f m;
+    Matrix4x4f makeRotate(float roll, float pitch, float yaw){
+        Matrix4x4f m;
 
         float sinRoll = sin(roll);
         float cosRoll = cos(roll);
@@ -112,16 +120,16 @@ namespace mathLib{
         return m;
     }
 
-    matrix4x4f makeScale(float x, float y, float z){
-        matrix4x4f m = makeIdentityf();
+    Matrix4x4f makeScale(float x, float y, float z){
+        Matrix4x4f m = makeIdentityf();
         m.matrixVec[0].x = x;
         m.matrixVec[1].y = y;
         m.matrixVec[2].z = z;
         return m;
     }
 
-    matrix4x4f operator+(matrix4x4f m1, matrix4x4f m2){
-        matrix4x4f res;
+    Matrix4x4f operator+(Matrix4x4f m1, Matrix4x4f m2){
+        Matrix4x4f res;
 
         for(int i = 0; i < 4 ; i++){
             for(int j = 0; j < 4; j++){
@@ -132,8 +140,8 @@ namespace mathLib{
         return res;
     }
 
-    matrix4x4f operator-(matrix4x4f m1, matrix4x4f m2){
-        matrix4x4f res;
+    Matrix4x4f operator-(Matrix4x4f m1, Matrix4x4f m2){
+        Matrix4x4f res;
 
         for(int i = 0; i < 4 ; i++){
             for(int j = 0; j < 4; j++){
@@ -144,8 +152,8 @@ namespace mathLib{
         return res;
     }
 
-    matrix4x4f operator*(matrix4x4f m1, matrix4x4f m2){
-        matrix4x4f res;
+    Matrix4x4f operator*(Matrix4x4f m1, Matrix4x4f m2){
+        Matrix4x4f res;
         for(int i = 0; i < 4 ; i++){
             for(int j = 0; j < 4; j++){
                 res.matrix[i * 4 + j] = 
@@ -159,8 +167,8 @@ namespace mathLib{
         return res;
     }
 
-    vec4float operator*(matrix4x4f m, vec4float v){
-        vec4float res;
+    Vector4f operator*(Matrix4x4f m, Vector4f v){
+        Vector4f res;
         for(int i = 0; i < 4; i++){
             res.v[i] = 
                 m.matrix[4 * i + 0] * v.x + 
@@ -172,8 +180,8 @@ namespace mathLib{
         return res;
     }
 
-    matrix4x4f operator*(matrix4x4f m, float n){
-        matrix4x4f res;
+    Matrix4x4f operator*(Matrix4x4f m, float n){
+        Matrix4x4f res;
         
         for(int i = 0; i < 4 * 4; i++){
             res.matrix[i] = m.matrix[i] * n;
@@ -182,8 +190,8 @@ namespace mathLib{
         return res;
     }
 
-    matrix4x4f transpose(matrix4x4f m){
-        matrix4x4f res;
+    Matrix4x4f transpose(Matrix4x4f m){
+        Matrix4x4f res;
         for(int i = 0; i < 4; i++){
             for(int j = 0; j < 4; j++){
                 res.matrixVec[i].v[j] = m.matrixVec[j].v[i]; 
@@ -192,7 +200,7 @@ namespace mathLib{
         return res;
     }
 
-    float getMinor(matrix4x4f m, int row, int col){
+    float getMinor(Matrix4x4f m, int row, int col){
         float subMatrix3x3[9];
         int subIndex = 0;
 
@@ -214,7 +222,7 @@ namespace mathLib{
             subMatrix3x3[6], subMatrix3x3[7], subMatrix3x3[8]);
     }
 
-    float determinant4x4(matrix4x4f m){
+    float determinant4x4(Matrix4x4f m){
         float determinant = 0;
 
         for(int i = 0; i < 4; i++){
@@ -234,10 +242,10 @@ namespace mathLib{
         return a0 * (b1 * c2 - b2 * c1) - b0 * (a1 * c2 - a2 * c1) + c0 * (a1 * b2 - a2 * b1);
     }
 
-    matrix4x4f inverse(matrix4x4f m){
+    Matrix4x4f inverse(Matrix4x4f m){
         float determinant = determinant4x4(m);
 
-        matrix4x4f adjugate;
+        Matrix4x4f adjugate;
 
         for(int i = 0; i < 4; i++){
             for(int j = 0; j < 4; j++){
@@ -254,13 +262,13 @@ namespace mathLib{
         return adjugate * (1.0f / determinant);
     }
 
-    vec4float makeQuaternion(float x, float y, float z, float angle){
-        vec4float vector = { x, y, z, 0 };
-        vec4float normalizedVector = normalize(vector);
+    Vector4f makeQuaternion(float x, float y, float z, float angle){
+        Vector4f vector = { x, y, z, 0 };
+        Vector4f normalizedVector = normalize(vector);
 
         float sinHalfAngle = sin(angle / 2);
 
-        return vec4float{
+        return Vector4f{
             normalizedVector.x * sinHalfAngle,
             normalizedVector.y * sinHalfAngle,
             normalizedVector.z * sinHalfAngle,
@@ -271,8 +279,8 @@ namespace mathLib{
     /// @brief Rotacion con quaternions
     /// @param quaternion 
     /// @return 
-    matrix4x4f makeRotate(vec4float quaternion){
-        matrix4x4f m;
+    Matrix4x4f makeRotate(Vector4f quaternion){
+        Matrix4x4f m;
 
         float x = quaternion.x;
         float y = quaternion.y;

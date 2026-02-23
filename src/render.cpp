@@ -1,6 +1,6 @@
-#include "Render.h"
-#include "eventManager.h"
-#include "mathLib.h"
+#include "render.h"
+#include "event_manager.h"
+#include "math_lib.h"
 
 Render::Render()
 {
@@ -58,29 +58,37 @@ void Render::setupObject(Object3D *obj)
 
 void Render::updateObjects(double timeStep)
 {
-    for(auto& obj: objectList){
-        obj->moveObject(timeStep);
+    camera->moveObject(timeStep);
+
+    for(auto& object : objectList){
+        object->moveObject(timeStep);
     }
 }
 
 void Render::drawObjects()
 {
-    for(auto& obj : objectList){
+    for(auto& object : objectList){
         
         // Settear buffers
-        auto bufferObject = bufferObjectList[obj->objectId]; // Recuperar lista buffers
+        auto bufferObject = bufferObjectList[object->objectId]; // Recuperar lista buffers
 
         glBindVertexArray(bufferObject.bufferId); // Activar lista de buffers
         glBindBuffer(GL_ARRAY_BUFFER, bufferObject.vertexBufferId); // Activar buffer de vertices
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.indexBufferId); // Activar buffer de indices de vertices
         
         // Settear matriz modelo
-        matrix4x4f model = obj->computeModelMatrix();
+        Matrix4x4f model = object->computeModelMatrix();
         glPushMatrix(); // Crear una matriz en GPU
         glLoadIdentity(); // Cargar matriz identidad
         
-        auto m = mathLib::transpose(model); // La multiplicamos por la traspuesta pq es la manera mas rapida de subir nuestra matriz de movimiento
-        glMultMatrixf(&m.matrix[0]);
+        // Matriz modelo vista controlador
+        auto mvp = mathLib::transpose(
+            camera->computeProjectionMatrix(-0.001f, 1000.0f, 3.1416f/4.0f, 4.0f/3.0f)
+            * camera->computeViewMatrix()
+            * model
+        );
+
+        glMultMatrixf((float*) &mvp); // Traspuesta
 
         // Describir datos
         glEnableClientState(GL_VERTEX_ARRAY); // Vamos a uar array de posiciones
@@ -88,7 +96,7 @@ void Render::drawObjects()
         glVertexPointer(4, GL_FLOAT, sizeof(vertex_t), (void*)offsetof(vertex_t, position));
 
         // Dibujar
-        glDrawElements(GL_TRIANGLES, obj->indexList.size(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, object->indexList.size(), GL_UNSIGNED_INT, nullptr);
 
 
         glPopMatrix(); // Saca la matriz
@@ -130,7 +138,7 @@ void Render::mainLoop()
 
 		// Poll de eventos
 		EventManager::updateEvents(); 
-	}	
+	}
+
 	glfwTerminate(); // Ultima linea de OpenGL
-	
 }

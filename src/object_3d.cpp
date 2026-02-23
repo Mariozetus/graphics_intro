@@ -1,5 +1,5 @@
-#include "Object3D.h"
-#include "eventManager.h"
+#include "object_3d.h"
+#include "event_manager.h"
 
 Object3D::Object3D()
 {
@@ -19,9 +19,9 @@ Object3D::Object3D()
     
 }
 
-matrix4x4f Object3D::computeModelMatrix()
+Matrix4x4f Object3D::computeModelMatrix()
 {
-    matrix4x4f model = makeTraslate(position.x, position.y, position.z);
+    Matrix4x4f model = makeTraslate(position.x, position.y, position.z);
     return model;
 }
 

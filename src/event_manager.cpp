@@ -1,4 +1,4 @@
-#include "eventManager.h"
+#include "event_manager.h"
 
 void EventManager::initEventManager(GLFWwindow* window)
 {

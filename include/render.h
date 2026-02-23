@@ -1,5 +1,6 @@
 #pragma once
-#include "Object3D.h"
+#include "object_3d.h"
+#include "camera.h"
 
 class Render {
 
@@ -9,6 +10,9 @@ public:
         unsigned int vertexBufferId;
         unsigned int indexBufferId;
     } bufferObject_t;
+
+    Camera* camera = new Camera({ 0, 0, 3, 1}, { 0, 0, 0, 1 });    
+
 
     vector< Object3D* > objectList;
     map< unsigned int, bufferObject_t > bufferObjectList;
